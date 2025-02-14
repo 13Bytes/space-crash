@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "SConscript": "python",
+        "SConstruct": "python",
+        "TAG_EDITMSG": "git-commit",
+        "plyconfig.json": "jsonc"
+    }
+}
