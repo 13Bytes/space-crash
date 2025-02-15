@@ -10,7 +10,6 @@ import { genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matte
 const Game = () => {
   const sceneRef = useRef(null);
   const gameWindowRef = useRef<HTMLElement>(null);
-  const [rocketPos, setRocketPos] = useState({ x: 400, y: 300, angle: 0 });
   const [winner, setWinner] = useState({ active: false, name: '', draw: false });
   const [startCountdown, setStartCountdown] = useState(3);
   const [randomEventsCounter, setRandomEventsCounter] = useState(0);
@@ -101,29 +100,44 @@ const Game = () => {
     Runner.run(runner, engine);
 
     // Keys
-    const keys = {
-      up: false,
-      left: false,
-      right: false
-    };
+    const keys = [
+      {
+        up: false,
+        left: false,
+        right: false,
+      },
+      {
+        up: false,
+        left: false,
+        right: false,
+      }
+    ]
     const handleKeyEvent = (keydown: boolean) => {
       return (e: KeyboardEvent) => {
         switch (e.key) {
+          case 'w':
+            keys[0].up = keydown;
+            break;
+          case 'a':
+            keys[0].left = keydown;
+            break;
+          case 'd':
+            keys[0].right = keydown;
+            break;
           case 'ArrowUp':
-            keys.up = keydown;
+            keys[1].up = keydown;
             break;
           case 'ArrowLeft':
-            keys.left = keydown;
+            keys[1].left = keydown;
             break;
           case 'ArrowRight':
-            keys.right = keydown;
+            keys[1].right = keydown;
             break;
           default:
             break;
         }
       }
     }
-
 
     Events.on(engine, 'beforeUpdate', () => {
       // check if game finished
@@ -142,21 +156,19 @@ const Game = () => {
 
       const FORCE_MULTIPLIER = 0.001;
       const ANGULAR_MULTIPLIER = 0.8;
-      if (keys.up) {
-        Body.applyForce(rocket1, rocket1.position, {
-          x: Math.cos(rocket1.angle) * FORCE_MULTIPLIER,
-          y: Math.sin(rocket1.angle) * FORCE_MULTIPLIER
-        });
+      for (const [i, rocket] of rockets.entries()) {
+        if (keys[i].up) {
+          Body.applyForce(rocket, rocket.position, {
+            x: Math.cos(rocket.angle) * FORCE_MULTIPLIER,
+            y: Math.sin(rocket.angle) * FORCE_MULTIPLIER
+          });
+        }
+        if (keys[i].left || keys[i].right) {
+          const direction = keys[i].left ? -1 : 1;
+          Body.setAngularVelocity(rocket, rocket.angularVelocity + direction * FORCE_MULTIPLIER * ANGULAR_MULTIPLIER);
+        }
       }
-      if (keys.left || keys.right) {
-        const direction = keys.left ? -1 : 1;
-        Body.setAngularVelocity(rocket1, rocket1.angularVelocity + direction * FORCE_MULTIPLIER * ANGULAR_MULTIPLIER);
-      }
-      setRocketPos({
-        x: rocket1.position.x,
-        y: rocket1.position.y,
-        angle: rocket1.angle + Math.PI / 2
-      });
+
 
       for (const rocket of rockets) {
         const margin = 7
@@ -181,7 +193,7 @@ const Game = () => {
       Matter.World.clear(engine.world, false);
       Matter.Engine.clear(engine);
     };
-  }, [sceneRef, gameWindowRef, setRocketPos, startCountdown, setBlackHole]);
+  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole]);
 
   // trigger of random game elements
   useEffect(() => {
@@ -212,7 +224,7 @@ const Game = () => {
         <h1 className="text-3xl font-extrabold sm:text-5xl">
           {startCountdown}
         </h1>
-    </div>
+      </div>
     </div>
     }
     {winner.active && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
