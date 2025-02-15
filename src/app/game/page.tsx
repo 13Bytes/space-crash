@@ -46,6 +46,7 @@ const Game = () => {
           texture: '/rocket-fire-green.svg',
           xScale: 0.3,
           yScale: 0.3,
+          //@ts-expect-error typing-lib and ground truth not in sync (argument missing)
           xOffset: 0.07,
         }
       },
@@ -64,6 +65,7 @@ const Game = () => {
           texture: '/rocket-fire-purple.svg',
           xScale: 0.3,
           yScale: 0.3,
+          //@ts-expect-error typing-lib and ground truth not in sync (argument missing)
           xOffset: 0.07,
         }
       },
