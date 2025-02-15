@@ -39,8 +39,8 @@ const Game = () => {
         wireframes: false,
         showDebug: true,
         showBroadphase: false,
-        showBounds: true,
-        showVelocity: true,
+        showBounds: false,
+        showVelocity: false,
         showCollisions: false,
         showSeparations: false,
         showAxes: false,
@@ -184,7 +184,7 @@ const Game = () => {
       }
     })
 
-    handleWindowResize(gameWindowRef, render, rockets); // set initial size
+    handleWindowResize(gameWindowRef, render, rockets,); // set initial size
 
     window.addEventListener('keydown', handleKeyEvent(true));
     window.addEventListener('keyup', handleKeyEvent(false));
@@ -196,7 +196,7 @@ const Game = () => {
       Matter.World.clear(engine.world, false);
       Matter.Engine.clear(engine);
     };
-  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole]);
+  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole, setWinner]);
 
   // trigger of random game elements
   useEffect(() => {

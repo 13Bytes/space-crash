@@ -20,7 +20,7 @@ Go to [spacecrash.13bytes.de](https://spacecrash.13bytes.de) and have fun!
 ## ToDos
 - [x] Add detection if out of screen
 - [ ] Add player scores
-- [ ] Add random modifiers ([black holes](https://github.com/liabru/matter-attractors), comets, ...)
-- [ ] Add Start-page with instructions
+- [x] Add random modifiers ([black holes](https://github.com/liabru/matter-attractors), comets, ...)
+- [x] Add Start-page with instructions
 - [ ] Make presentation
 - [ ] Add LAN mode (maybe >2 players?)
