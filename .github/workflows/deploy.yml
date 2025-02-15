@@ -18,7 +18,7 @@ jobs:
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ vars.FTP_DEPLOY_IP }}
+          server: ftpes://${{ vars.FTP_DEPLOY_IP }}
           username: ${{ vars.FTP_DEPLOY_USER }}
           password: "${{ secrets.FTP_DEPLOY_PASSWORD }}"
           local-dir: './out/'
