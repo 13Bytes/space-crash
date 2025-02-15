@@ -18,7 +18,7 @@ Go to [spacecrash.13bytes.de](https://spacecrash.13bytes.de) and have fun!
 
 --- 
 ## ToDos
-- [ ] Add detection if out of screen
+- [x] Add detection if out of screen
 - [ ] Add player scores
 - [ ] Add random modifiers ([black holes](https://github.com/liabru/matter-attractors), comets, ...)
 - [ ] Add Start-page with instructions
