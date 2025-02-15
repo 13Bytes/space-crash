@@ -1,20 +1,22 @@
 "use client"
 
 import React, { Ref, useEffect, useRef, useState } from 'react';
-import Matter, { Engine, Render, Runner, Bodies, Composite, Events, Body } from 'matter-js';
+import Matter, { Engine, Render, Runner, Bodies, Composite, Events, Body, World } from 'matter-js';
 //@ts-expect-error lib has no typing : (
 import MatterAttractors from 'matter-attractors';
 import { getRandom } from '@/helper/mathHelper';
-import { genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matterHelper';
+import { genAsteroid, genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matterHelper';
 
 const Game = () => {
   const sceneRef = useRef(null);
   const gameWindowRef = useRef<HTMLElement>(null);
   const [winner, setWinner] = useState({ active: false, name: '', draw: false });
   const [startCountdown, setStartCountdown] = useState(3);
-  const [randomEventsCounter, setRandomEventsCounter] = useState(0);
   const [blackHole, setBlackHole] = useState<Body>();
+  const [randomEventsCounter, setRandomEventsCounter] = useState(0);
+  const [asteroidCounter, setAsteroidCounter] = useState(0);
   const [render, setRender] = useState<Render>();
+  const [world, setWorld] = useState<World>();
 
   useEffect(() => {
     if (startCountdown !== 0) return
@@ -37,8 +39,8 @@ const Game = () => {
         wireframes: false,
         showDebug: true,
         showBroadphase: false,
-        showBounds: false,
-        showVelocity: false,
+        showBounds: true,
+        showVelocity: true,
         showCollisions: false,
         showSeparations: false,
         showAxes: false,
@@ -51,7 +53,6 @@ const Game = () => {
       render: {
         visible: true,
         sprite: {
-          // texture: '/rocket1.svg',
           texture: '/rocket-fire-purple.svg',
           xScale: 0.3,
           yScale: 0.3,
@@ -70,7 +71,6 @@ const Game = () => {
       render: {
         visible: true,
         sprite: {
-          // texture: '/rocket1.svg',
           texture: '/rocket-fire-green.svg',
           xScale: 0.3,
           yScale: 0.3,
@@ -89,10 +89,13 @@ const Game = () => {
     const rockets = [rocket1, rocket2];
     const blackHole = genBlackHole(engine.world, render)
 
-    setBlackHole(blackHole)
     setRender(render)
+    setWorld(engine.world)
+    setBlackHole(blackHole)
 
     Composite.add(engine.world, [...rockets]);
+
+    genAsteroid(engine.world, render, { x: 200, y: 200 })
 
 
     Render.run(render);
@@ -144,7 +147,7 @@ const Game = () => {
       if (rockets.reduce((acc, rocket) => acc + (rocket.render.visible ? 1 : 0), 0) <= 1) {
         Render.stop(render);
 
-        if (!winner.active) {
+        if (winner.active !== true) {
           const remainingRockets = rockets.filter(rocket => rocket.render.visible);
           if (remainingRockets.length === 1) {
             setWinner({ active: true, name: remainingRockets[0].label, draw: false });
@@ -206,6 +209,16 @@ const Game = () => {
     }, randomDelay)
     return () => clearInterval(interval);
   }, [setRandomEventsCounter, randomEventsCounter, blackHole, render]);
+  useEffect(() => {
+    if (world === undefined || render === undefined) return;
+    const randomDelay = Math.floor(Math.random() * 5000) + 1500
+    const interval = setInterval(() => {
+      console.log("starting asteroid")
+      genAsteroid(world, render)
+      setAsteroidCounter(c => c + 1);
+    }, randomDelay)
+    return () => clearInterval(interval);
+  }, [setAsteroidCounter, asteroidCounter, genAsteroid, world, render]);
 
   // Start-Countdown
   useEffect(() => {
