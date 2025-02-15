@@ -201,7 +201,7 @@ const Game = () => {
           {/* <strong className="font-extrabold text-red-700 sm:block"> Increase Conversion. </strong> */}
         </h1>
         <a
-          className="block rounded-sm mt-8 bg-rose-600 px-12 py-3 text-sm font-medium text-white shadow-sm hover:bg-rose-700 focus:ring-3 focus:outline-hidden sm:w-auto"
+          className="block rounded-sm mt-8 bg-blue-600 px-12 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-3 focus:outline-hidden sm:w-auto"
           onClick={() => window.location.reload()}
         >
           Play again
