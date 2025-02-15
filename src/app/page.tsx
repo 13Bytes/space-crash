@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,12 +17,12 @@ export default function Home() {
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a
+            <Link
               className="block w-full rounded-sm border border-blue-600 bg-blue-600 shadow-sm  px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-white focus:ring-3 focus:outline-hidden sm:w-auto"
               href="/game"
             >
               PLAY
-            </a>
+            </Link>
           </div>
         </div>
       </div>
