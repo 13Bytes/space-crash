@@ -120,13 +120,15 @@ const Game = () => {
         console.log('Game finished');
         Render.stop(render);
 
-        const remainingRockets = rockets.filter(rocket => rocket.render.visible);
-        if (remainingRockets.length === 1) {
-          console.log('Winner:', remainingRockets[0].label);
-          setWinner({ active: true, name: remainingRockets[0].label, draw: false });
-        } else {
-          console.log('Draw');
-          setWinner({ active: true, name: '', draw: true });
+        if (!winner.active) {
+          const remainingRockets = rockets.filter(rocket => rocket.render.visible);
+          if (remainingRockets.length === 1) {
+            console.log('Winner:', remainingRockets[0].label);
+            setWinner({ active: true, name: remainingRockets[0].label, draw: false });
+          } else {
+            console.log('Draw');
+            setWinner({ active: true, name: '', draw: true });
+          }
         }
       }
 
