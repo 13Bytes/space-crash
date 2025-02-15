@@ -1,16 +1,26 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Ref, useEffect, useRef, useState } from 'react';
 import Matter, { Engine, Render, Runner, Bodies, Composite, Events, Body } from 'matter-js';
+//@ts-expect-error lib has no typing : (
+import MatterAttractors from 'matter-attractors';
+import { getRandom } from '@/helper/mathHelper';
+import { genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matterHelper';
 
 const Game = () => {
   const sceneRef = useRef(null);
-  const gameWindowRef = useRef(null);
+  const gameWindowRef = useRef<HTMLElement>(null);
   const [rocketPos, setRocketPos] = useState({ x: 400, y: 300, angle: 0 });
   const [winner, setWinner] = useState({ active: false, name: '', draw: false });
+  const [startCountdown, setStartCountdown] = useState(3);
+  const [randomEventsCounter, setRandomEventsCounter] = useState(0);
+  const [blackHole, setBlackHole] = useState<Body>();
+  const [render, setRender] = useState<Render>();
 
   useEffect(() => {
+    if (startCountdown !== 0) return
     if (!sceneRef.current) return;
+    Matter.use(MatterAttractors);
 
     const engine = Engine.create();
     engine.gravity.y = 0;
@@ -36,7 +46,6 @@ const Game = () => {
         showPositions: false,
       }
     });
-
 
     // Objects
     const rocket1 = Bodies.rectangle(200, 400, 33, 15, {
@@ -78,12 +87,14 @@ const Game = () => {
       chamfer: { radius: 4 },
     })
 
-
     const rockets = [rocket1, rocket2];
+    const blackHole = genBlackHole(engine.world, render)
 
+    setBlackHole(blackHole)
+    setRender(render)
 
-    // const ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
     Composite.add(engine.world, [...rockets]);
+
 
     Render.run(render);
     const runner = Runner.create();
@@ -117,16 +128,13 @@ const Game = () => {
     Events.on(engine, 'beforeUpdate', () => {
       // check if game finished
       if (rockets.reduce((acc, rocket) => acc + (rocket.render.visible ? 1 : 0), 0) <= 1) {
-        console.log('Game finished');
         Render.stop(render);
 
         if (!winner.active) {
           const remainingRockets = rockets.filter(rocket => rocket.render.visible);
           if (remainingRockets.length === 1) {
-            console.log('Winner:', remainingRockets[0].label);
             setWinner({ active: true, name: remainingRockets[0].label, draw: false });
           } else {
-            console.log('Draw');
             setWinner({ active: true, name: '', draw: true });
           }
         }
@@ -155,33 +163,17 @@ const Game = () => {
         if (rocket.position.x < render.bounds.min.x - margin || rocket.position.x > render.bounds.max.x + margin) {
           rocket.render.visible = false;
         }
+        if (rocket.position.y < render.bounds.min.y - margin || rocket.position.y > render.bounds.max.y + margin) {
+          rocket.render.visible = false;
+        }
       }
     })
 
-    const handleWindowResize = () => {
-      if (gameWindowRef.current == null) return;
-      // get the current window size
-      const width = (gameWindowRef.current as HTMLElement).clientWidth;
-      const height = (gameWindowRef.current as HTMLElement).clientHeight;
-
-      // set the render size to equal window size
-      render.bounds.max.x = width - 2;
-      render.bounds.max.y = height - 2;
-      render.options.width = width - 2;
-      render.options.height = height - 2;
-      Render.setPixelRatio(render, window.devicePixelRatio);
-
-      // update the render bounds to fit the scene
-      Render.lookAt(render, Composite.allBodies(engine.world), {
-        x: 50,
-        y: 50
-      });
-    }
-    handleWindowResize(); // set initial size
+    handleWindowResize(gameWindowRef, render, rockets); // set initial size
 
     window.addEventListener('keydown', handleKeyEvent(true));
     window.addEventListener('keyup', handleKeyEvent(false));
-    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener('resize', () => handleWindowResize(gameWindowRef, render, rockets));
 
     // unmount
     return () => {
@@ -189,12 +181,40 @@ const Game = () => {
       Matter.World.clear(engine.world, false);
       Matter.Engine.clear(engine);
     };
-  }, [sceneRef, gameWindowRef, setRocketPos]);
+  }, [sceneRef, gameWindowRef, setRocketPos, startCountdown, setBlackHole]);
 
+  // trigger of random game elements
+  useEffect(() => {
+    const randomDelay = Math.floor(Math.random() * 10000) + 10000
+    const interval = setInterval(() => {
+      console.log("starting random event")
+      if (!blackHole || !render) return;
+      renewBlackHole(blackHole, render)
+      setRandomEventsCounter(c => c + 1);
+    }, randomDelay)
+    return () => clearInterval(interval);
+  }, [setRandomEventsCounter, randomEventsCounter, blackHole, render]);
 
-  return <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900 rounded-md' ref={gameWindowRef}>
+  // Start-Countdown
+  useEffect(() => {
+    if (startCountdown === 0) return;
+    const interval = setInterval(() => {
+      setStartCountdown(c => c - 1);
+    }, 800);
+    return () => clearInterval(interval);
+  }, [setStartCountdown, startCountdown]);
+
+  return <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
     <div className='border border-gray-700 rounded-lg overflow-hidden' ref={sceneRef} />
 
+    {startCountdown !== 0 && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+      <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
+        <h1 className="text-3xl font-extrabold sm:text-5xl">
+          {startCountdown}
+        </h1>
+    </div>
+    </div>
+    }
     {winner.active && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
       <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
         <h1 className="text-3xl font-extrabold sm:text-5xl">
@@ -208,7 +228,6 @@ const Game = () => {
         >
           Play again
         </a>
-
       </div>
     </div>
     }

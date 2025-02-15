@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "matter-attractors": "^0.1.6",
     "matter-js": "^0.20.0",
     "next": "15.1.7",
     "react": "^19.0.0",
