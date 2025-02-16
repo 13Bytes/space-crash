@@ -62,7 +62,7 @@ export const genBlackHole = (composite: Matter.World, render: Render, location?:
     force: { x: travelForces[0], y: travelForces[1] },
     friction: 0,
     frictionAir: 0,
-    torque: -1,
+    torque: -0.6,
     render: {
       fillStyle: '#282828',
       strokeStyle: '#000000',
