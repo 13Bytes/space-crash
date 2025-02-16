@@ -17,6 +17,8 @@ const Game = () => {
   const [asteroidCounter, setAsteroidCounter] = useState(0);
   const [render, setRender] = useState<Render>();
   const [world, setWorld] = useState<World>();
+  const [winCounter, setWinCounter] = useState<{ [key: string]: number }>({});
+
 
   useEffect(() => {
     if (startCountdown !== 0) return
@@ -146,6 +148,10 @@ const Game = () => {
       }
     }
 
+    const increaseWinCounter = (name: string) => {
+      setWinCounter(wc => wc[name] ? { ...wc, [name]: wc[name] + 1 } : { ...wc, [name]: 1 });
+    }
+
     let winnerLocked = false
     Events.on(engine, 'beforeUpdate', () => {
       // check if game finished
@@ -156,9 +162,13 @@ const Game = () => {
           if (remainingRockets.length === 1) {
             winnerLocked = true;
             setWinner({ active: true, name: remainingRockets[0].label, draw: false });
+            increaseWinCounter(remainingRockets[0].label)
           } else {
             winnerLocked = true;
             setWinner({ active: true, name: '', draw: true });
+            for (const rocket of remainingRockets) {
+              increaseWinCounter(rocket.label)
+            }
           }
         }
       }
@@ -203,7 +213,7 @@ const Game = () => {
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
-  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole, setWinner, setRender, setWorld, genAsteroid, genBlackHole]);
+  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole, setWinner, setRender, setWorld, genAsteroid, genBlackHole, setWinCounter]);
 
   // trigger of random game elements
   useEffect(() => {
@@ -255,34 +265,49 @@ const Game = () => {
     <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900  text-gray-950 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
       <div className='border border-gray-700  rounded-md overflow-hidden' ref={sceneRef as Ref<HTMLDivElement>} />
 
-    {startCountdown !== 0 && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-      <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
-        <h1 className="text-3xl font-extrabold sm:text-5xl">
-          {startCountdown}
-        </h1>
+      <div className="fixed  top-1/2 -translate-y-1/2 left-0 ">
+        <div className="relative text-center rounded-lg bg-gray-100 p-5 m-2 opacity-60 lg:opacity-100 shadow-xs">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">
+            {winCounter['Player 1'] || 0}
+          </h1>
+        </div>
       </div>
-    </div>
-    }
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" hidden={!winner.active}>
-      <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
-        <h1 className="text-3xl font-extrabold sm:text-5xl">
-          {winner.draw === true && 'Draw!'}
-          {winner.name && `${winner.name} wins!`}
-          {/* <strong className="font-extrabold text-red-700 sm:block"> Increase Conversion. </strong> */}
-        </h1>
-        <a
-          className="block rounded-sm mt-8 bg-blue-600 px-12 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-3 focus:outline-hidden sm:w-auto"
-          onClick={restartGame}
-          tabIndex={0}
-          autoFocus
-          onKeyDown={(e) => (
-            e.key === "Enter" ? restartGame() : null
-          )}
-        >
-          Play again
-        </a>
+      <div className="fixed  top-1/2 -translate-y-1/2 right-0 ">
+        <div className="relative text-center rounded-lg bg-gray-100 p-5 m-2 opacity-60 lg:opacity-100 shadow-xs">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">
+            {winCounter['Player 2'] || 0}
+          </h1>
+        </div>
       </div>
-    </div>
+
+      {startCountdown !== 0 && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+        <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">
+            {startCountdown}
+          </h1>
+        </div>
+      </div>
+      }
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" hidden={!winner.active}>
+        <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">
+            {winner.draw === true && 'Draw!'}
+            {winner.name && `${winner.name} wins!`}
+            {/* <strong className="font-extrabold text-red-700 sm:block"> Increase Conversion. </strong> */}
+          </h1>
+          <a
+            className="block rounded-sm mt-8 bg-blue-600 px-12 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-3 focus:outline-hidden sm:w-auto"
+            onClick={restartGame}
+            tabIndex={0}
+            autoFocus
+            onKeyDown={(e) => (
+              e.key === "Enter" ? restartGame() : null
+            )}
+          >
+            Play again
+          </a>
+        </div>
+      </div>
 
 
     </div>

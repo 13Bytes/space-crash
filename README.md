@@ -17,10 +17,9 @@ Go to [spacecrash.13bytes.de](https://spacecrash.13bytes.de) and have fun!
 
 
 --- 
-## ToDos
-- [x] Add detection if out of screen
-- [ ] Add player scores
+## Hackathon ToDos
+- [x] Add winner-detection (detect if rocket out is out of screen)
+- [x] Add player scores
 - [x] Add random modifiers ([black holes](https://github.com/liabru/matter-attractors), comets, ...)
 - [x] Add Start-page with instructions
-- [ ] Make presentation
-- [ ] Add LAN mode (maybe >2 players?)
+- [x] Make presentation
