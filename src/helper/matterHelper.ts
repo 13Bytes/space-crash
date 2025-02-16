@@ -39,7 +39,7 @@ export const objectOnScreen = (obj: Body, render: Render) => {
   return false
 }
 
-const TRAVEL_FORCE = 10e-4
+const BLACK_HOLE_TRAVEL_FORCE = 10e-3
 export const genBlackHole = (composite: Matter.World, render: Render, location?: { x: number, y: number }, size?: number) => {
   const holeSize = size ? size : Math.random() * 100 + 10
 
@@ -53,7 +53,7 @@ export const genBlackHole = (composite: Matter.World, render: Render, location?:
 
   const dX = travelTroughPoint[0] - startPosX
   const dY = travelTroughPoint[1] - startPosY
-  const travelForces = [dX / Math.sqrt(dX ** 2 + dY ** 2) * TRAVEL_FORCE, dY / Math.sqrt(dX ** 2 + dY ** 2) * TRAVEL_FORCE]
+  const travelForces = [dX / Math.sqrt(dX ** 2 + dY ** 2) * BLACK_HOLE_TRAVEL_FORCE, dY / Math.sqrt(dX ** 2 + dY ** 2) * BLACK_HOLE_TRAVEL_FORCE]
 
   const body = Bodies.circle(startPosX, startPosY, holeSize, {
     collisionFilter: {
@@ -62,7 +62,7 @@ export const genBlackHole = (composite: Matter.World, render: Render, location?:
     force: { x: travelForces[0], y: travelForces[1] },
     friction: 0,
     frictionAir: 0,
-    torque: -0.6,
+    torque: 0.3,
     render: {
       fillStyle: '#282828',
       strokeStyle: '#000000',
@@ -110,9 +110,10 @@ export const renewBlackHole = (blackHole: Body, render: Render, location?: { x: 
 
   const dX = travelTroughPoint[0] - startPosX
   const dY = travelTroughPoint[1] - startPosY
-  const travelForces = [dX / Math.sqrt(dX ** 2 + dY ** 2) * TRAVEL_FORCE, dY / Math.sqrt(dX ** 2 + dY ** 2) * TRAVEL_FORCE]
+  const travelForces = [dX / Math.sqrt(dX ** 2 + dY ** 2) * BLACK_HOLE_TRAVEL_FORCE, dY / Math.sqrt(dX ** 2 + dY ** 2) * BLACK_HOLE_TRAVEL_FORCE]
 
   Body.setPosition(blackHole, { x: startPosX, y: startPosY })
+  Body.setVelocity(blackHole, { x: 0, y: 0 })
   Body.applyForce(blackHole, blackHole.position, { x: travelForces[0], y: travelForces[1] })
   // Body.scale(blackHole, holeSize / 50, holeSize / 50)
   return blackHole
