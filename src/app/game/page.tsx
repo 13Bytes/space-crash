@@ -8,7 +8,7 @@ import { getRandom } from '@/helper/mathHelper';
 import { genAsteroid, genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matterHelper';
 
 const Game = () => {
-  const sceneRef = useRef(null);
+  const sceneRef = useRef<HTMLElement>(null);
   const gameWindowRef = useRef<HTMLElement>(null);
   const [winner, setWinner] = useState({ active: false, name: '', draw: false });
   const [startCountdown, setStartCountdown] = useState(3);
@@ -26,8 +26,8 @@ const Game = () => {
     const engine = Engine.create();
     engine.gravity.y = 0;
 
-    const render = Render.create({
-      element: sceneRef.current,
+    const matterRenderOptions: Matter.IRenderDefinition = {
+
       engine: engine,
       options: {
         width: 800,
@@ -37,7 +37,7 @@ const Game = () => {
         wireframeBackground: '#222',
         hasBounds: false,
         wireframes: false,
-        showDebug: true,
+        showDebug: process.env.NODE_ENV === "development" ? true : false,
         showBroadphase: false,
         showBounds: false,
         showVelocity: false,
@@ -46,7 +46,11 @@ const Game = () => {
         showAxes: false,
         showPositions: false,
       }
-    });
+    }
+    const existingCanvas = sceneRef.current.querySelector('canvas');
+    const render = existingCanvas
+      ? Render.create({ canvas: existingCanvas, ...matterRenderOptions })
+      : Render.create({ element: sceneRef.current, ...matterRenderOptions })
 
     // Objects
     const rocket1 = Bodies.rectangle(200, 400, 33, 15, {
@@ -142,16 +146,18 @@ const Game = () => {
       }
     }
 
+    let winnerLocked = false
     Events.on(engine, 'beforeUpdate', () => {
       // check if game finished
       if (rockets.reduce((acc, rocket) => acc + (rocket.render.visible ? 1 : 0), 0) <= 1) {
         Render.stop(render);
-
-        if (winner.active !== true) {
+        if (!winnerLocked) {
           const remainingRockets = rockets.filter(rocket => rocket.render.visible);
           if (remainingRockets.length === 1) {
+            winnerLocked = true;
             setWinner({ active: true, name: remainingRockets[0].label, draw: false });
           } else {
+            winnerLocked = true;
             setWinner({ active: true, name: '', draw: true });
           }
         }
@@ -192,18 +198,19 @@ const Game = () => {
 
     // unmount
     return () => {
-      Matter.Render.stop(render);
-      Matter.World.clear(engine.world, false);
-      Matter.Engine.clear(engine);
+      Render.stop(render);
+      Runner.stop(runner);
+      World.clear(engine.world, false);
+      Engine.clear(engine);
     };
-  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole, setWinner]);
+  }, [sceneRef, gameWindowRef, startCountdown, setBlackHole, setWinner, setRender, setWorld, genAsteroid, genBlackHole]);
 
   // trigger of random game elements
   useEffect(() => {
     const randomDelay = Math.floor(Math.random() * 10000) + 10000
     const interval = setInterval(() => {
-      console.log("starting random event")
       if (!blackHole || !render) return;
+      console.log("starting random event")
       renewBlackHole(blackHole, render)
       setRandomEventsCounter(c => c + 1);
     }, randomDelay)
@@ -229,8 +236,13 @@ const Game = () => {
     return () => clearInterval(interval);
   }, [setStartCountdown, startCountdown]);
 
-  return <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
-    <div className='border border-gray-700 rounded-lg overflow-hidden' ref={sceneRef} />
+  const restartGame = () => {
+    setWinner({ active: false, name: '', draw: false });
+    setStartCountdown(3);
+  }
+
+  return <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900 text-gray-950 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
+    <div className='border border-gray-700 rounded-lg overflow-hidden' ref={sceneRef as Ref<HTMLDivElement>} />
 
     {startCountdown !== 0 && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
       <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
@@ -240,22 +252,27 @@ const Game = () => {
       </div>
     </div>
     }
-    {winner.active && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" hidden={!winner.active}>
       <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
         <h1 className="text-3xl font-extrabold sm:text-5xl">
-          {winner.draw && 'Draw!'}
+          {winner.draw === true && 'Draw!'}
           {winner.name && `${winner.name} wins!`}
           {/* <strong className="font-extrabold text-red-700 sm:block"> Increase Conversion. </strong> */}
         </h1>
         <a
           className="block rounded-sm mt-8 bg-blue-600 px-12 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-3 focus:outline-hidden sm:w-auto"
-          onClick={() => window.location.reload()}
+          onClick={restartGame}
+          tabIndex={0}
+          autoFocus
+          onKeyDown={(e) => (
+            e.key === "Enter" ? restartGame() : null
+          )}
         >
           Play again
         </a>
       </div>
     </div>
-    }
+
 
   </div>
 };
