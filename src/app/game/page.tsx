@@ -5,7 +5,7 @@ import Matter, { Engine, Render, Runner, Bodies, Composite, Events, Body, World 
 //@ts-expect-error lib has no typing : (
 import MatterAttractors from 'matter-attractors';
 import { getRandom } from '@/helper/mathHelper';
-import { genAsteroid, genBlackHole, handleWindowResize, renewBlackHole } from '@/helper/matterHelper';
+import { genAsteroid, genBlackHole, handleWindowResize, objectOnScreen, renewBlackHole } from '@/helper/matterHelper';
 
 const Game = () => {
   const sceneRef = useRef<HTMLElement>(null);
@@ -207,21 +207,31 @@ const Game = () => {
 
   // trigger of random game elements
   useEffect(() => {
-    const randomDelay = Math.floor(Math.random() * 10000) + 10000
+    const randomDelay = Math.floor(Math.random() * 10000) + 7000
     const interval = setInterval(() => {
       if (!blackHole || !render) return;
       console.log("starting random event")
-      renewBlackHole(blackHole, render)
+      if (!objectOnScreen(blackHole, render)) {
+        renewBlackHole(blackHole, render)
+      }
       setRandomEventsCounter(c => c + 1);
     }, randomDelay)
     return () => clearInterval(interval);
   }, [setRandomEventsCounter, randomEventsCounter, blackHole, render]);
   useEffect(() => {
     if (world === undefined || render === undefined) return;
-    const randomDelay = Math.floor(Math.random() * 5000) + 1500
+    const randomDelay = Math.floor(Math.random() * 5000) + (1500 - asteroidCounter * 10)
     const interval = setInterval(() => {
       console.log("starting asteroid")
       genAsteroid(world, render)
+      if (asteroidCounter > 10 && Math.random() > 0.5) {
+        // additional asteroid
+        genAsteroid(world, render)
+      }
+      if (asteroidCounter > 20 && Math.random() > 0.3) {
+        // additional asteroid
+        genAsteroid(world, render)
+      }
       setAsteroidCounter(c => c + 1);
     }, randomDelay)
     return () => clearInterval(interval);
@@ -241,8 +251,9 @@ const Game = () => {
     setStartCountdown(3);
   }
 
-  return <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900 text-gray-950 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
-    <div className='border border-gray-700 rounded-lg overflow-hidden' ref={sceneRef as Ref<HTMLDivElement>} />
+  return (
+    <div className='h-dvh w-dvw m-auto max-w-4xl bg-gray-900  text-gray-950 rounded-md' ref={gameWindowRef as Ref<HTMLDivElement>}>
+      <div className='border border-gray-700  rounded-md overflow-hidden' ref={sceneRef as Ref<HTMLDivElement>} />
 
     {startCountdown !== 0 && <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
       <div className="relative max-w-xl  text-center rounded-lg bg-gray-100 p-10 shadow-xs">
@@ -274,7 +285,8 @@ const Game = () => {
     </div>
 
 
-  </div>
+    </div>
+  )
 };
 
 export default Game;

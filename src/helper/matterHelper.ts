@@ -24,12 +24,22 @@ export const handleWindowResize = (gameWindowRef: React.RefObject<HTMLElement | 
 const getRandomStartPosOutsideScreen = () => {
   const SCREEN_SIZE = 1000
   const randomStartAngle = Math.random() * 2 * Math.PI
-  const startPosX = Math.cos(randomStartAngle) * (SCREEN_SIZE / 2)
-  const startPosY = Math.sin(randomStartAngle) * (SCREEN_SIZE / 2)
+  const startPosX = Math.cos(randomStartAngle) * (SCREEN_SIZE / 2) + SCREEN_SIZE / 2
+  const startPosY = Math.sin(randomStartAngle) * (SCREEN_SIZE / 2) + SCREEN_SIZE / 2
   return [startPosX, startPosY]
 }
 
-const TRAVEL_FORCE = 0.02
+export const objectOnScreen = (obj: Body, render: Render) => {
+  const margin = 40
+  if (obj.position.x > render.bounds.min.x - margin && obj.position.x < render.bounds.max.x + margin) {
+    if (obj.position.y > render.bounds.min.y - margin && obj.position.y < render.bounds.max.y + margin) {
+      return true
+    }
+  }
+  return false
+}
+
+const TRAVEL_FORCE = 10e-4
 export const genBlackHole = (composite: Matter.World, render: Render, location?: { x: number, y: number }, size?: number) => {
   const holeSize = size ? size : Math.random() * 100 + 10
 
